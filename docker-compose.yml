@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  meals-service-1:
+    build: ./meals  # path is relative to docker-compose-shorthand.yml location
+    restart: always   # possible values for restart are:  "no", always, on-failure, unless-stopped
+    environment:
+      # tells flask run to run in development mode and reload the code on change. This mode should only be used in
+      # development.
+      MONGO_PORT: 27017
+      DIETS_INTERNAL_PORT: 80
+      FLASK_DEBUG: "true"
+    ports:
+      - "5001:80"  # host:container
+    expose:
+      - 80
+    depends_on:
+      - mongo
+
+  meals-service-2:
+    build: ./meals  # path is relative to docker-compose-shorthand.yml location
+    restart: always   # possible values for restart are:  "no", always, on-failure, unless-stopped
+    environment:
+      # tells flask run to run in development mode and reload the code on change. This mode should only be used in
+      # development.
+      MONGO_PORT: 27017
+      DIETS_INTERNAL_PORT: 80
+      FLASK_DEBUG: "true"
+    ports:
+      - "5003:80"  # host:container
+    expose:
+      - 80
+    depends_on:
+      - mongo
+
+  diets-service:
+    build: ./diets  # path is relative to docker-compose-shorthand.yml location
+    restart: always   # possible values for restart are:  "no", always, on-failure, unless-stopped
+    environment:
+      # tells flask run to run in development mode and reload the code on change. This mode should only be used in
+      # development.
+      MONGO_PORT: 27017
+      FLASK_DEBUG: "true"
+    ports:
+      - "5002:80"  # host:container
+    expose:
+      - 80
+    depends_on:
+      - mongo
+
+  nginx:
+      build: ./reverse
+      ports:
+          - "80:80"
+      depends_on:
+          - meals-service-1
+          - meals-service-2
+          - diets-service
+
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
